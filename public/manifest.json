@@ -1,0 +1,41 @@
+{
+  "name": "RankAlert - Theo dõi bảng xếp hạng",
+  "short_name": "RankAlert",
+  "description": "Nhận thông báo ngay khi thứ hạng thay đổi. Theo dõi VieON, YouTube, TikTok, Spotify realtime.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8C4AFF",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Xem bảng xếp hạng",
+      "short_name": "Rankings",
+      "description": "Xem tất cả bảng xếp hạng",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
