@@ -6,7 +6,7 @@ compatibility_date = "2024-12-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "rankalert"
-database_id = "your-database-id" # Sẽ tạo sau: wrangler d1 create rankalert
+database_id = "627cf431-f42c-433e-a358-91c25c73fec8"
 
 # Cron triggers
 [triggers]
@@ -14,5 +14,5 @@ crons = ["*/10 * * * *"] # Chạy mỗi 10 phút
 
 # Environment variables
 [vars]
-ONESIGNAL_APP_ID = "your-onesignal-app-id"
-ONESIGNAL_API_KEY = "your-onesignal-api-key"
+ONESIGNAL_APP_ID = "4e73d291-d7db-4000-afce-f3c059e31a59"
+ONESIGNAL_API_KEY = "os_v2_app_jzz5feox3naabl6o6paftyy2le6etj2rk3je2vvqzji5vuyiolugii5r3bwu6d2ptjymq7iwb2p7ncqrccaqlbd5b55rhxta47nt34a"
