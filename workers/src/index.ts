@@ -55,14 +55,22 @@ export default {
     }
 
     if (url.pathname.startsWith('/api/rankings/')) {
-      const rankingId = url.pathname.split('/').pop();
-      const items = await env.DB.prepare(
-        'SELECT * FROM ranking_items WHERE ranking_id = ? ORDER BY score DESC, position ASC'
-      ).bind(rankingId).all();
-      
-      return new Response(JSON.stringify(items.results), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      try {
+        const rankingId = url.pathname.split('/').pop();
+        const items = await env.DB.prepare(
+          'SELECT * FROM ranking_items WHERE ranking_id = ? ORDER BY score DESC, position ASC'
+        ).bind(rankingId).all();
+        
+        return new Response(JSON.stringify(items.results), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        console.error('Database error:', error);
+        return new Response(JSON.stringify({ error: 'Database error', message: String(error) }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
     }
 
     return new Response('RankAlert Worker', { headers: corsHeaders });
