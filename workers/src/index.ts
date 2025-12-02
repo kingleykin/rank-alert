@@ -29,16 +29,29 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     
+    // CORS headers
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    };
+
+    // Handle OPTIONS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+    
     if (url.pathname === '/api/update' && request.method === 'POST') {
       const { rankingId } = await request.json();
       const ranking = await env.DB.prepare('SELECT * FROM rankings WHERE id = ?').bind(rankingId).first();
       
       if (!ranking) {
-        return new Response('Ranking not found', { status: 404 });
+        return new Response('Ranking not found', { status: 404, headers: corsHeaders });
       }
       
       await processRanking(ranking, env);
-      return new Response('OK');
+      return new Response('OK', { headers: corsHeaders });
     }
 
     if (url.pathname.startsWith('/api/rankings/')) {
@@ -48,11 +61,11 @@ export default {
       ).bind(rankingId).all();
       
       return new Response(JSON.stringify(items.results), {
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    return new Response('RankAlert Worker');
+    return new Response('RankAlert Worker', { headers: corsHeaders });
   }
 };
 
