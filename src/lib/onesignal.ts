@@ -5,9 +5,6 @@ export async function initOneSignal() {
     await OneSignal.init({
       appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "",
       allowLocalhostAsSecureOrigin: true,
-      notifyButton: {
-        enable: false, // Tắt button mặc định, dùng custom button
-      },
       welcomeNotification: {
         title: "RankAlert",
         message: "Cảm ơn bạn đã bật thông báo! 🎉",
@@ -17,7 +14,7 @@ export async function initOneSignal() {
     // Set external user ID nếu có
     const userId = localStorage.getItem("userId");
     if (userId) {
-      await OneSignal.setExternalUserId(userId);
+      await OneSignal.login(userId);
     }
 
     console.log("OneSignal initialized");
@@ -28,7 +25,7 @@ export async function initOneSignal() {
 
 export async function subscribeToNotifications() {
   try {
-    await OneSignal.showSlidedownPrompt();
+    await OneSignal.Slidedown.promptPush();
     return true;
   } catch (error) {
     console.error("Subscribe error:", error);
@@ -38,7 +35,8 @@ export async function subscribeToNotifications() {
 
 export async function isSubscribed(): Promise<boolean> {
   try {
-    return await OneSignal.isPushNotificationsEnabled();
+    const permission = await OneSignal.Notifications.permission;
+    return permission;
   } catch (error) {
     return false;
   }
@@ -46,8 +44,8 @@ export async function isSubscribed(): Promise<boolean> {
 
 export async function getPlayerId(): Promise<string | null> {
   try {
-    const userId = await OneSignal.getUserId();
-    return userId;
+    const userId = await OneSignal.User.PushSubscription.id;
+    return userId || null;
   } catch (error) {
     return null;
   }
@@ -55,7 +53,7 @@ export async function getPlayerId(): Promise<string | null> {
 
 export async function subscribeToRanking(rankingId: string) {
   try {
-    await OneSignal.sendTag("ranking_" + rankingId, "true");
+    await OneSignal.User.addTag("ranking_" + rankingId, "true");
     console.log(`Subscribed to ranking: ${rankingId}`);
   } catch (error) {
     console.error("Subscribe to ranking error:", error);
@@ -64,7 +62,7 @@ export async function subscribeToRanking(rankingId: string) {
 
 export async function unsubscribeFromRanking(rankingId: string) {
   try {
-    await OneSignal.deleteTag("ranking_" + rankingId);
+    await OneSignal.User.removeTag("ranking_" + rankingId);
     console.log(`Unsubscribed from ranking: ${rankingId}`);
   } catch (error) {
     console.error("Unsubscribe from ranking error:", error);
