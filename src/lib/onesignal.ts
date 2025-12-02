@@ -1,7 +1,21 @@
 import OneSignal from "react-onesignal";
 
+let isInitialized = false;
+
 export async function initOneSignal() {
+  // Prevent double initialization
+  if (isInitialized) {
+    console.log("OneSignal already initialized");
+    return;
+  }
+
   try {
+    // Skip OneSignal on localhost (only works on production domain)
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      console.log("OneSignal skipped on localhost");
+      return;
+    }
+
     await OneSignal.init({
       appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "",
       allowLocalhostAsSecureOrigin: true,
@@ -10,6 +24,8 @@ export async function initOneSignal() {
         message: "Cảm ơn bạn đã bật thông báo! 🎉",
       },
     });
+
+    isInitialized = true;
 
     // Set external user ID nếu có
     const userId = localStorage.getItem("userId");

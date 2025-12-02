@@ -31,59 +31,71 @@ export default function RankingDetail() {
   const supabase = createClient();
 
   useEffect(() => {
-    // Initialize OneSignal
     initOneSignal().then(async () => {
       const enabled = await isSubscribed();
       setNotificationEnabled(enabled);
-
-      // Check if subscribed to this ranking
-      // TODO: Check from backend or localStorage
       const savedSub = localStorage.getItem(`sub_${params.id}`);
       setSubscribed(savedSub === "true");
     });
 
-    // TODO: Fetch từ API
-    setItems([
-      {
-        position: 1,
-        item_name: "Anh Trai A",
-        score: 15000,
-        change: "up",
-        changeAmount: 2,
-      },
-      {
-        position: 2,
-        item_name: "Anh Trai B",
-        score: 12000,
-        change: "down",
-        changeAmount: 1,
-      },
-      {
-        position: 3,
-        item_name: "Anh Trai C",
-        score: 10500,
-        change: "same",
-      },
-      {
-        position: 4,
-        item_name: "Anh Trai D",
-        score: 9800,
-        change: "new",
-      },
-      {
-        position: 5,
-        item_name: "Anh Trai E",
-        score: 8500,
-        change: "up",
-        changeAmount: 3,
-      },
-    ]);
-    setLoading(false);
+    const fetchRankingData = async () => {
+      try {
+        setLoading(true);
+        const apiUrl =
+          process.env.NEXT_PUBLIC_WORKERS_API_URL || "http://localhost:8787";
+        const response = await fetch(`${apiUrl}/api/rankings/${params.id}`);
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        const transformedItems: RankingItem[] = data.map(
+          (item: any, index: number) => ({
+            position: index + 1,
+            item_name: item.item_name,
+            item_image: item.item_image,
+            score: item.score,
+            change: "same" as const,
+            changeAmount: 0,
+          })
+        );
+
+        setItems(transformedItems);
+      } catch (error) {
+        console.error("Error fetching ranking data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRankingData();
   }, [params.id]);
 
   const handleSubscribe = async () => {
     try {
-      // Nếu chưa enable notification, yêu cầu permission trước
+      const rankingId = params.id as string;
+
+      // On localhost, OneSignal is disabled, so just toggle state
+      if (
+        typeof window !== "undefined" &&
+        window.location.hostname === "localhost"
+      ) {
+        if (subscribed) {
+          localStorage.removeItem(`sub_${rankingId}`);
+          setSubscribed(false);
+          alert(
+            "✅ Đã tắt thông báo (Demo mode - chỉ hoạt động trên production)"
+          );
+        } else {
+          localStorage.setItem(`sub_${rankingId}`, "true");
+          setSubscribed(true);
+          alert(
+            "✅ Đã bật thông báo (Demo mode - chỉ hoạt động trên production)"
+          );
+        }
+        return;
+      }
+
+      // Production: Use OneSignal
       if (!notificationEnabled) {
         const success = await subscribeToNotifications();
         if (!success) {
@@ -93,112 +105,54 @@ export default function RankingDetail() {
         setNotificationEnabled(true);
       }
 
-      const rankingId = params.id as string;
-
       if (subscribed) {
-        // Unsubscribe
         await unsubscribeFromRanking(rankingId);
         localStorage.removeItem(`sub_${rankingId}`);
         setSubscribed(false);
-
-        // TODO: Call backend API to remove subscription
-        // await fetch('/api/subscriptions', {
-        //   method: 'DELETE',
-        //   body: JSON.stringify({ rankingId, playerId: await getPlayerId() })
-        // });
+        alert("✅ Đã tắt thông báo");
       } else {
-        // Subscribe
         await subscribeToRanking(rankingId);
         localStorage.setItem(`sub_${rankingId}`, "true");
         setSubscribed(true);
-
-        // Save subscription to backend
-        const playerId = await getPlayerId();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        console.log("Player ID:", playerId);
-        console.log("User ID:", user?.id);
-
-        // TODO: Call Workers API to save subscription
-        // await fetch('/api/subscriptions', {
-        //   method: 'POST',
-        //   body: JSON.stringify({
-        //     rankingId,
-        //     playerId,
-        //     userId: user?.id
-        //   })
-        // });
+        alert("✅ Đã bật thông báo");
       }
     } catch (error) {
       console.error("Subscribe error:", error);
-      alert("Có lỗi xảy ra. Vui lòng thử lại.");
+      alert("❌ Có lỗi xảy ra. Vui lòng thử lại.");
     }
   };
 
   const getRankBadge = (position: number) => {
     if (position === 1)
-      return "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white";
-    if (position === 2)
-      return "bg-gradient-to-br from-gray-300 to-gray-500 text-white";
+      return "bg-gradient-to-br from-yellow-400 to-yellow-600";
+    if (position === 2) return "bg-gradient-to-br from-gray-300 to-gray-500";
     if (position === 3)
-      return "bg-gradient-to-br from-orange-400 to-orange-600 text-white";
-    return "bg-gradient-to-br from-blue-500 to-blue-600 text-white";
-  };
-
-  const getChangeIcon = (change?: string, amount?: number) => {
-    if (!change || change === "same") return null;
-    if (change === "new")
-      return <span className="text-green-500 text-xs font-bold">🆕 NEW</span>;
-    if (change === "up")
-      return (
-        <span className="text-green-500 flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="text-xs font-bold">+{amount}</span>
-        </span>
-      );
-    if (change === "down")
-      return (
-        <span className="text-red-500 flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="text-xs font-bold">-{amount}</span>
-        </span>
-      );
+      return "bg-gradient-to-br from-orange-400 to-orange-600";
+    return "bg-gradient-to-br from-purple-500 to-purple-600";
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Đang tải bảng xếp hạng...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-white/20 border-t-white mx-auto"></div>
+          <p className="mt-4 text-white font-medium">
+            Đang tải bảng xếp hạng...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900">
       {/* Header */}
-      <header className="bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative max-w-4xl mx-auto px-4 py-8">
+      <header className="relative overflow-hidden pb-20">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 py-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
           >
             <svg
               className="w-5 h-5"
@@ -216,36 +170,37 @@ export default function RankingDetail() {
             <span>Quay lại</span>
           </Link>
 
-          <div className="flex items-center gap-4 mb-4">
-            <div className="text-5xl">🎤</div>
-            <div>
-              <h1 className="text-3xl font-bold">Anh Trai Say Hi</h1>
-              <p className="text-purple-100">Bảng xếp hạng VieON</p>
-            </div>
-          </div>
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+              🎤 ANH TRAI SAY HI
+            </h1>
+            <p className="text-white/90 text-lg mb-6">
+              Bảng xếp hạng bình chọn VieON
+            </p>
 
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
-              </span>
-              <span>Cập nhật realtime</span>
+            <div className="flex items-center justify-center gap-4 text-sm text-white/80">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                </span>
+                <span>Cập nhật realtime</span>
+              </div>
+              <span>•</span>
+              <span>{items.length} Anh Trai</span>
             </div>
-            <span>•</span>
-            <span>Vừa cập nhật 2 phút trước</span>
           </div>
         </div>
       </header>
 
       {/* Subscribe Button */}
-      <div className="max-w-4xl mx-auto px-4 -mt-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 -mt-16 mb-8 relative z-10">
         <button
           onClick={handleSubscribe}
-          className={`w-full py-4 rounded-2xl font-bold text-lg shadow-lg transition-all duration-300 ${
+          className={`w-full max-w-2xl mx-auto block py-4 px-6 rounded-2xl font-bold text-base shadow-2xl transition-all duration-300 ${
             subscribed
-              ? "bg-white text-purple-600 border-2 border-purple-600 hover:bg-purple-50"
-              : "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-xl hover:scale-[1.02]"
+              ? "bg-white text-purple-600 hover:bg-gray-50 border-2 border-purple-600"
+              : "bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:shadow-pink-500/50 hover:scale-[1.02]"
           }`}
         >
           {subscribed ? (
@@ -276,109 +231,173 @@ export default function RankingDetail() {
         </button>
       </div>
 
-      {/* Rankings List */}
-      <main className="max-w-4xl mx-auto px-4 mt-8">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
-            <h2 className="text-lg font-bold text-gray-800">
-              Top {items.length} Anh Trai
-            </h2>
-          </div>
-
-          <div className="divide-y">
-            {items.map((item, index) => (
-              <div
-                key={item.position}
-                className="p-4 hover:bg-gray-50 transition-colors"
-                style={{
-                  animation: `fadeIn 0.3s ease-out ${index * 0.05}s both`,
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  {/* Rank Badge */}
+      {/* Rankings Grid - VieON Style */}
+      <main className="max-w-7xl mx-auto px-4 pb-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {items.map((item, index) => (
+            <div
+              key={item.position}
+              className="group relative"
+              style={{
+                animation: `fadeInUp 0.5s ease-out ${index * 0.05}s both`,
+              }}
+            >
+              {/* Card */}
+              <div className="relative bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 hover:border-white/40 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/30">
+                {/* Rank Badge */}
+                {/* <div className="absolute top-3 left-3 z-10">
                   <div
-                    className={`w-12 h-12 rounded-xl ${getRankBadge(
+                    className={`${getRankBadge(
                       item.position
-                    )} flex items-center justify-center font-bold text-lg shadow-md flex-shrink-0`}
+                    )} w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-lg text-sm`}
                   >
                     {item.position}
                   </div>
+                </div> */}
 
-                  {/* Avatar Placeholder */}
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-2xl shadow-md flex-shrink-0">
-                    👤
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-gray-800 text-lg truncate">
-                        {item.item_name}
-                      </h3>
-                      {getChangeIcon(item.change, item.changeAmount)}
+                {/* Avatar */}
+                <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-purple-400/20 to-pink-400/20">
+                  {item.item_image ? (
+                    <img
+                      src={item.item_image}
+                      alt={item.item_name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-6xl">
+                      👤
                     </div>
-                    {item.score && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <svg
-                          className="w-4 h-4 text-yellow-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        <span className="font-semibold">
-                          {item.score.toLocaleString("vi-VN")}
-                        </span>
-                        <span className="text-gray-400">votes</span>
-                      </div>
-                    )}
+                  )}
+
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                </div>
+
+                {/* Info */}
+                <div className="p-4">
+                  <h3 className="font-bold text-white text-center mb-2 line-clamp-2 min-h-[3rem]">
+                    {item.item_name}
+                  </h3>
+
+                  {/* Votes */}
+                  <div className="flex items-center justify-center gap-2 text-yellow-400">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="font-bold text-sm">
+                      {item.score?.toLocaleString("vi-VN")}
+                    </span>
                   </div>
 
-                  {/* Action */}
-                  <button className="text-gray-400 hover:text-purple-600 transition-colors">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
+                  {/* Rank Display */}
+                  <div className="mt-3 text-center">
+                    <div className="text-white/70 text-xs mb-1">Hạng</div>
+                    <div className="text-2xl font-bold text-white">
+                      #{item.position}
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+
+              {/* Hover Effect Glow */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/20 group-hover:to-purple-500/20 -z-10 blur-xl transition-all duration-300"></div>
+            </div>
+          ))}
         </div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
-            <div className="text-3xl mb-2">📊</div>
-            <div className="text-2xl font-bold mb-1">{items.length}</div>
-            <div className="text-blue-100 text-sm">Anh trai tham gia</div>
+        {/* Stats */}
+        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 text-center border border-white/20 hover:border-white/40 transition-all">
+            <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </div>
+            <div className="text-2xl font-bold text-white mb-1">
+              {items.length}
+            </div>
+            <div className="text-white/70 text-sm">Anh trai</div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-            <div className="text-3xl mb-2">🔥</div>
-            <div className="text-2xl font-bold mb-1">
-              {items.filter((i) => i.change === "up").length}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 text-center border border-white/20 hover:border-white/40 transition-all">
+            <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-orange-400 to-red-600 rounded-xl flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </div>
-            <div className="text-purple-100 text-sm">Đang tăng hạng</div>
+            <div className="text-2xl font-bold text-white mb-1">
+              {items
+                .reduce((sum, i) => sum + (i.score || 0), 0)
+                .toLocaleString("vi-VN")}
+            </div>
+            <div className="text-white/70 text-sm">Tổng votes</div>
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 text-center border border-white/20 hover:border-white/40 transition-all">
+            <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            </div>
+            <div className="text-2xl font-bold text-white mb-1 truncate">
+              {items[0]?.item_name || "-"}
+            </div>
+            <div className="text-white/70 text-sm">Top 1</div>
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 text-center border border-white/20 hover:border-white/40 transition-all">
+            <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-green-400 to-emerald-600 rounded-xl flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
+            <div className="text-2xl font-bold text-white mb-1">Live</div>
+            <div className="text-white/70 text-sm">Realtime</div>
           </div>
         </div>
       </main>
 
       <style jsx>{`
-        @keyframes fadeIn {
+        @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(20px);
           }
           to {
             opacity: 1;

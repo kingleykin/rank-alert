@@ -44,7 +44,7 @@ export default {
     if (url.pathname.startsWith('/api/rankings/')) {
       const rankingId = url.pathname.split('/').pop();
       const items = await env.DB.prepare(
-        'SELECT * FROM ranking_items WHERE ranking_id = ? ORDER BY position ASC'
+        'SELECT * FROM ranking_items WHERE ranking_id = ? ORDER BY score DESC, position ASC'
       ).bind(rankingId).all();
       
       return new Response(JSON.stringify(items.results), {
