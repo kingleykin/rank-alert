@@ -75,6 +75,29 @@ export default function RankingDetail() {
     try {
       const rankingId = params.id as string;
 
+      // Detect iOS
+      const userAgent = navigator.userAgent;
+      const platform = (navigator as any).platform || '';
+      const isIPhone = /iPhone|iPod/.test(userAgent);
+      const isIPad = /iPad/.test(userAgent) || 
+                     (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isIOS = isIPhone || isIPad;
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches ||
+                           (window.navigator as any).standalone === true;
+
+      // iOS Safari không hỗ trợ push notifications - chỉ hoạt động khi đã cài app
+      if (isIOS && !isStandalone) {
+        alert(
+          "⚠️ Thông báo trên iOS chỉ hoạt động sau khi bạn thêm app vào màn hình chính.\n\n" +
+          "📱 Hướng dẫn:\n" +
+          "1. Nhấn nút Share (⬆️) ở thanh công cụ Safari\n" +
+          "2. Chọn 'Add to Home Screen'\n" +
+          "3. Mở app từ màn hình chính\n" +
+          "4. Quay lại đây và bật thông báo"
+        );
+        return;
+      }
+
       // On localhost, OneSignal is disabled, so just toggle state
       if (
         typeof window !== "undefined" &&

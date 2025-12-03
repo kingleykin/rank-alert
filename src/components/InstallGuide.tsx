@@ -9,16 +9,27 @@ export default function InstallGuide() {
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    // Detect iOS
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    // Detect iOS - improved detection for modern iPads
+    const userAgent = navigator.userAgent;
+    const platform = (navigator as any).platform || '';
+    
+    // Check for iPhone/iPod
+    const isIPhone = /iPhone|iPod/.test(userAgent);
+    
+    // Check for iPad - modern iPads report as Macintosh
+    const isIPad = /iPad/.test(userAgent) || 
+                   (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    const iOS = isIPhone || isIPad;
     setIsIOS(iOS);
 
     // Detect Android
-    const android = /Android/.test(navigator.userAgent);
+    const android = /Android/.test(userAgent);
     setIsAndroid(android);
 
     // Check if already installed (standalone mode)
-    const standalone = window.matchMedia("(display-mode: standalone)").matches;
+    const standalone = window.matchMedia("(display-mode: standalone)").matches ||
+                       (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
 
     // Show guide if on mobile and not installed
