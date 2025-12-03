@@ -25,6 +25,8 @@ export async function initOneSignal() {
     await OneSignal.init({
       appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "",
       allowLocalhostAsSecureOrigin: true,
+      serviceWorkerPath: "OneSignalSDKWorker.js",
+      serviceWorkerParam: { scope: "/" },
       welcomeNotification: {
         title: "RankAlert",
         message: "Cảm ơn bạn đã bật thông báo! 🎉",
