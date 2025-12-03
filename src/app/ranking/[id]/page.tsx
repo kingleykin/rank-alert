@@ -123,7 +123,11 @@ export default function RankingDetail() {
       if (!notificationEnabled) {
         const success = await subscribeToNotifications();
         if (!success) {
-          alert("Vui lòng cho phép thông báo để tiếp tục");
+          alert(
+            "❌ Không thể bật thông báo.\n\n" +
+            "Nếu bạn đã từng từ chối quyền thông báo, vui lòng vào:\n" +
+            "Cài đặt (Settings) -> RankAlert -> Thông báo -> Bật"
+          );
           return;
         }
         setNotificationEnabled(true);

@@ -50,8 +50,11 @@ export async function initOneSignal() {
 
 export async function subscribeToNotifications() {
   try {
-    await OneSignal.Slidedown.promptPush();
-    return true;
+    // Sử dụng requestPermission trực tiếp thay vì Slidedown để đảm bảo hoạt động tốt trên iOS
+    console.log("Requesting permission...");
+    const granted = await OneSignal.Notifications.requestPermission();
+    console.log("Permission result:", granted);
+    return granted;
   } catch (error) {
     console.error("Subscribe error:", error);
     return false;
@@ -60,8 +63,8 @@ export async function subscribeToNotifications() {
 
 export async function isSubscribed(): Promise<boolean> {
   try {
-    const permission = await OneSignal.Notifications.permission;
-    return permission;
+    // OneSignal v16: permission is a boolean property
+    return OneSignal.Notifications.permission;
   } catch (error) {
     return false;
   }
