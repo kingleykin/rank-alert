@@ -1,0 +1,18 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Maskable icon with 20% safe zone (38.4px padding on each side) -->
+<!-- Safe zone: content should be within 38.4px to 153.6px -->
+<rect width="192" height="192" fill="url(#gradient)"/>
+<rect x="24" y="24" width="144" height="144" rx="32" fill="white"/>
+<rect x="48" y="108" width="24" height="42" rx="6" fill="#3B82F6"/>
+<rect x="78" y="78" width="24" height="72" rx="6" fill="#8C4AFF"/>
+<rect x="108" y="48" width="24" height="102" rx="6" fill="#EC3BFF"/>
+<path d="M118 58L118 48L128 58" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="138" cy="50" r="9" fill="#EF3B4A"/>
+<defs>
+<linearGradient id="gradient" x1="0" y1="0" x2="192" y2="192" gradientUnits="userSpaceOnUse">
+<stop stop-color="#3B82F6"/>
+<stop offset="0.5" stop-color="#8C4AFF"/>
+<stop offset="1" stop-color="#EC3BFF"/>
+</linearGradient>
+</defs>
+</svg>

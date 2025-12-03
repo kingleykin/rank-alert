@@ -103,13 +103,47 @@ npm run dev
 cd workers && npm run dev
 ```
 
-## 📱 PWA Features
+## 📱 Cài đặt App trên Mobile
+
+### 📲 iPhone / iPad (iOS / iPadOS)
+
+1. **Mở Safari** và truy cập website RankAlert
+2. Nhấn nút **Share** (biểu tượng chia sẻ ở thanh công cụ)
+3. Cuộn xuống và chọn **"Add to Home Screen"** (Thêm vào màn hình chính)
+4. Đặt tên cho app (mặc định: "RankAlert")
+5. Nhấn **"Add"** (Thêm)
+6. Icon app sẽ xuất hiện trên màn hình chính
+
+**Lưu ý:** 
+- Phải dùng Safari, không hoạt động trên Chrome iOS
+- Icon sẽ hiển thị với kích thước 180x180px
+- App sẽ mở ở chế độ toàn màn hình (standalone)
+
+### 🤖 Android
+
+1. **Mở Chrome** và truy cập website RankAlert
+2. Nhấn vào menu **⋮** (3 chấm dọc ở góc trên bên phải)
+3. Chọn **"Add to Home screen"** hoặc **"Install app"**
+4. Xác nhận tên app
+5. Nhấn **"Add"** hoặc **"Install"**
+6. Icon app sẽ xuất hiện trên màn hình chính
+
+**Hoặc:**
+- Một số trình duyệt sẽ tự động hiển thị banner "Add to Home screen" khi bạn truy cập
+- Nhấn vào banner để cài đặt nhanh
+
+**Lưu ý:**
+- Icon sẽ tự động điều chỉnh theo launcher của bạn (tròn, vuông, squircle)
+- Hỗ trợ adaptive icons với safe zone 20%
+
+## ✨ PWA Features
 
 - ✅ Installable như native app
 - ✅ Offline support
 - ✅ Push notifications
 - ✅ Add to home screen
 - ✅ Fast loading với service worker cache
+- ✅ Icon tối ưu cho iOS & Android
 
 ## 🔔 OneSignal Integration
 

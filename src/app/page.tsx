@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import AuthButton from "@/components/AuthButton";
+// import AuthButton from "@/components/AuthButton"; // Temporarily disabled
 
 interface Ranking {
   id: string;
@@ -191,7 +191,7 @@ export default function Home() {
             </svg>
             <span className="font-bold text-xl text-gray-800">RankAlert</span>
           </div>
-          <AuthButton />
+          {/* <AuthButton /> */} {/* Temporarily disabled */}
         </div>
       </nav>
 
