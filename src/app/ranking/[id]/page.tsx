@@ -123,12 +123,17 @@ export default function RankingDetail() {
       if (!notificationEnabled) {
         const success = await subscribeToNotifications();
         if (!success) {
+        if (!success) {
+          // Check current permission state for debugging
+          const currentPermission = Notification.permission;
           alert(
-            "❌ Không thể bật thông báo.\n\n" +
-            "Nếu bạn đã từng từ chối quyền thông báo, vui lòng vào:\n" +
-            "Cài đặt (Settings) -> RankAlert -> Thông báo -> Bật"
+            `❌ Không thể bật thông báo.\n` +
+            `Trạng thái hiện tại: ${currentPermission}\n\n` +
+            "Nếu trạng thái là 'denied' (từ chối), bạn cần vào Cài đặt để bật lại.\n" +
+            "Nếu trạng thái là 'default' mà không hiện prompt, có thể do lỗi kết nối hoặc cấu hình."
           );
           return;
+        }
         }
         setNotificationEnabled(true);
       }

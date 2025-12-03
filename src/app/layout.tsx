@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+export const viewport: Viewport = {
+  themeColor: "#8C4AFF",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
 export const metadata: Metadata = {
   title: "RankAlert - Theo dõi bảng xếp hạng",
   description:
     "Nhận thông báo ngay khi thứ hạng thay đổi. Theo dõi VieON, YouTube, TikTok, Spotify realtime.",
   manifest: "/manifest.json",
-  themeColor: "#8C4AFF",
-  viewport:
-    "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -31,6 +36,7 @@ export const metadata: Metadata = {
 import InstallPrompt from "./install-prompt";
 import InstallGuide from "@/components/InstallGuide";
 import OneSignalProvider from "./onesignal-provider";
+import { Viewport } from "next";
 
 export default function RootLayout({
   children,
