@@ -115,7 +115,7 @@ export default function Home() {
               RankAlert
             </h1>
             <p className="text-xl sm:text-2xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Đừng mất thời gian refresh. Chúng tôi theo dõi giùm bạn — chỉ
+              Đừng mất thời gian refresh. Chúng tôi theo dõi giúp bạn — chỉ
               thông báo khi có thay đổi đáng giá.
             </p>
 

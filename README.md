@@ -4,7 +4,7 @@ Nền tảng theo dõi bảng xếp hạng theo thời gian thực - Nhận thô
 
 ## 🎯 Triết lý
 
-"Đừng mất thời gian refresh. Chúng tôi theo dõi giùm bạn — chỉ thông báo khi có thay đổi đáng giá."
+"Đừng mất thời gian refresh. Chúng tôi theo dõi giúp bạn — chỉ thông báo khi có thay đổi đáng giá."
 
 ## 🏗️ Kiến trúc
 
