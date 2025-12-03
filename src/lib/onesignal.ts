@@ -22,11 +22,14 @@ export async function initOneSignal() {
       return;
     }
 
+    const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "";
+    console.log("OneSignal APP_ID:", appId ? "✓ Loaded" : "✗ Missing");
+
     await OneSignal.init({
-      appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "",
+      appId: appId,
       allowLocalhostAsSecureOrigin: true,
-      serviceWorkerPath: "OneSignalSDKWorker.js",
-      serviceWorkerParam: { scope: "/" },
+      serviceWorkerPath: "/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
       welcomeNotification: {
         title: "RankAlert",
         message: "Cảm ơn bạn đã bật thông báo! 🎉",
