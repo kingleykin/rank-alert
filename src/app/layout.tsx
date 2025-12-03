@@ -54,10 +54,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="RankAlert" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#8C4AFF" />
-        <script
-          src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
-          defer
-        ></script>
       </head>
       <body>
         <OneSignalProvider>
