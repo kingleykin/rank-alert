@@ -22,19 +22,6 @@ export async function initOneSignal() {
       return;
     }
 
-    // Check if OneSignal SDK is already initialized
-    if (typeof window !== 'undefined' && (window as any).OneSignalDeferred) {
-      const isSDKInitialized = await (window as any).OneSignalDeferred.then((OneSignalSDK: any) => {
-        return OneSignalSDK.User?.PushSubscription !== undefined;
-      }).catch(() => false);
-      
-      if (isSDKInitialized) {
-        console.log("OneSignal SDK already initialized");
-        window._oneSignalInitialized = true;
-        return;
-      }
-    }
-
     await OneSignal.init({
       appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "",
       allowLocalhostAsSecureOrigin: true,
