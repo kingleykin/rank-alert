@@ -134,6 +134,13 @@ export default function InstallGuide() {
                     
                     <ol className="space-y-3 text-sm text-gray-700">
                       <li className="flex gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">⚠️</span>
+                        <div>
+                          <p className="font-semibold text-red-700">TẮT VPN trước khi cài đặt</p>
+                          <p className="text-gray-600">Nếu đang bật VPN, vào Settings → VPN → Tắt. VPN sẽ chặn thông báo không hoạt động.</p>
+                        </div>
+                      </li>
+                      <li className="flex gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
                         <div>
                           <p className="font-semibold">Nhấn nút Share</p>

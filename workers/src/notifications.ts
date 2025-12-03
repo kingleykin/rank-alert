@@ -11,10 +11,10 @@ export async function sendNotifications(ranking: any, changes: RankingChange[], 
     return;
   }
 
-  const significantChanges = changes.filter(c => 
-    c.change === 'new' || 
-    c.change === 'out' || 
-    (c.changeAmount && c.changeAmount >= 3)
+  const significantChanges = changes.filter(c =>
+    c.change === 'new' ||
+    c.change === 'out' ||
+    (c.changeAmount && c.changeAmount >= 2)
   );
 
   if (significantChanges.length === 0) {
@@ -24,7 +24,7 @@ export async function sendNotifications(ranking: any, changes: RankingChange[], 
 
   const message = formatNotificationMessage(ranking.name, significantChanges);
   const playerIds = subscriptions.results.map((s: any) => s.onesignal_player_id);
-  
+
   await sendOneSignalNotification(
     env.ONESIGNAL_APP_ID,
     env.ONESIGNAL_API_KEY,
@@ -37,7 +37,7 @@ export async function sendNotifications(ranking: any, changes: RankingChange[], 
 
 function formatNotificationMessage(rankingName: string, changes: RankingChange[]): string {
   const change = changes[0];
-  
+
   if (change.change === 'new') {
     return `🆕 ${change.itemName} mới vào ${rankingName}!`;
   } else if (change.change === 'out') {
