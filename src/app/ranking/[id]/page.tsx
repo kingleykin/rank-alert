@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
-  initOneSignal,
   subscribeToNotifications,
   isSubscribed,
   subscribeToRanking,
@@ -31,12 +30,15 @@ export default function RankingDetail() {
   const supabase = createClient();
 
   useEffect(() => {
-    initOneSignal().then(async () => {
+    // Check notification status (OneSignal is already initialized globally)
+    const checkNotificationStatus = async () => {
       const enabled = await isSubscribed();
       setNotificationEnabled(enabled);
       const savedSub = localStorage.getItem(`sub_${params.id}`);
       setSubscribed(savedSub === "true");
-    });
+    };
+    
+    checkNotificationStatus();
 
     const fetchRankingData = async () => {
       try {

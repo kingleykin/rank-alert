@@ -1,10 +1,15 @@
 import OneSignal from "react-onesignal";
 
-let isInitialized = false;
+// Use window object to persist initialization state across Next.js page navigations
+declare global {
+  interface Window {
+    _oneSignalInitialized?: boolean;
+  }
+}
 
 export async function initOneSignal() {
   // Prevent double initialization
-  if (isInitialized) {
+  if (typeof window !== 'undefined' && window._oneSignalInitialized) {
     console.log("OneSignal already initialized");
     return;
   }
@@ -13,7 +18,21 @@ export async function initOneSignal() {
     // Skip OneSignal on localhost (only works on production domain)
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       console.log("OneSignal skipped on localhost");
+      window._oneSignalInitialized = true; // Mark as initialized even on localhost
       return;
+    }
+
+    // Check if OneSignal SDK is already initialized
+    if (typeof window !== 'undefined' && (window as any).OneSignalDeferred) {
+      const isSDKInitialized = await (window as any).OneSignalDeferred.then((OneSignalSDK: any) => {
+        return OneSignalSDK.User?.PushSubscription !== undefined;
+      }).catch(() => false);
+      
+      if (isSDKInitialized) {
+        console.log("OneSignal SDK already initialized");
+        window._oneSignalInitialized = true;
+        return;
+      }
     }
 
     await OneSignal.init({
@@ -25,7 +44,9 @@ export async function initOneSignal() {
       },
     });
 
-    isInitialized = true;
+    if (typeof window !== 'undefined') {
+      window._oneSignalInitialized = true;
+    }
 
     // Set external user ID nếu có
     const userId = localStorage.getItem("userId");
@@ -36,6 +57,7 @@ export async function initOneSignal() {
     console.log("OneSignal initialized");
   } catch (error) {
     console.error("OneSignal initialization error:", error);
+    // Don't mark as initialized if there was an error
   }
 }
 
