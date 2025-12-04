@@ -14,7 +14,7 @@ export async function sendNotifications(ranking: any, changes: RankingChange[], 
   const significantChanges = changes.filter(c =>
     c.change === 'new' ||
     c.change === 'out' ||
-    (c.changeAmount && c.changeAmount >= 2)
+    (c.changeAmount && c.changeAmount >= 1)
   );
 
   if (significantChanges.length === 0) {
