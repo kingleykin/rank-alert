@@ -15,4 +15,6 @@ crons = ["*/10 * * * *"] # Chạy mỗi 10 phút
 # Environment variables
 [vars]
 ONESIGNAL_APP_ID = "4e73d291-d7db-4000-afce-f3c059e31a59"
-ONESIGNAL_API_KEY = "os_v2_app_jzz5feox3naabl6o6paftyy2le6etj2rk3je2vvqzji5vuyiolugii5r3bwu6d2ptjymq7iwb2p7ncqrccaqlbd5b55rhxta47nt34a"
+# ONESIGNAL_API_KEY is set as a secret (not committed to git)
+# For local development: Add to .dev.vars file
+# For production: Set using: wrangler secret put ONESIGNAL_API_KEY
